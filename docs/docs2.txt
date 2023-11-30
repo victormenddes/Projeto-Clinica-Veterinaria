@@ -1,0 +1,151 @@
+
+
+------------------------------------------------------------------------------------------------------------------------------
+Organizar estrutura do projeto:
+
+1ª passo -> Iniciar um projeto dentro da pasta
+  - npm init -Y
+
+
+2ª passo -> instalar as dependencias do projeto + bibliotecas(dotenv/express/pg pg-hstore(postgres)/sequelize validator)
+  - npm install dotenv express pg pg-hstore sequelize validator(pode ser tudo junto) OU
+  - npm install dotenv
+  - npm install express
+  - npm install pg pg-hstore
+  - npm install sequelize validator
+
+
+3ª passo -> instalar typesScript e suas dependencias
+  - tsc --init(cria tsconfig.json)
+  - Configurar os ambientes dentro do 'tsconfig.json'
+    - "target": "es6"  
+    - "rootDir": "./src"  
+    - "outDir": "./dist"  
+    - "moduleResolution": "node"
+
+
+------------------------------------------------------------------------------------------------------------------------------
+4ª passo -> instalar @types e suas dependencias:
+  - npm install -D @types/express @types/node @types/sequelize @types/validator
+
+
+------------------------------------------------------------------------------------------------------------------------------
+5ª passo -> Criar uma pasta 'src' dentro do projeto
+6ª passo -> Dentro da pasta 'src' criar uma pasta server
+  6.1 -> dentro da pasta server criar um arquivo chamado 'server.ts' para o 'servidor'
+  - Configurar o servidor:
+      - Importar as bibliotecas:
+          import express from 'express'
+          import path from 'path'
+          import dotenv from 'dotenv'
+      - Execultar dotenv:
+        - dotenv.config()
+      - Execultar servidor:
+        - const server = express()
+  - Permitir atraves da pasta 'public' que seja usado imagens/fotos e dados externos
+      - server.use(express.static(path.join(__dirname, '../public'))) 
+  - Permitir envio de informações trafegados por rotas 'express'
+      - server.use(express.urlencoded({extended: true}))
+  - Temos que criar um novo arquivo .env na pasta projeto e configurar(PORT = 4000)
+      - server.listen(process.env.PORT)
+7ª passo -> Criar uma pasta chamado 'public' dentro da pasta do projeto
+
+
+------------------------------------------------------------------------------------------------------------------------------
+8ª passo -> Criar uma função callback para porta não encontrada: 'Error 404'
+  - server.use((req: Request, res: Response) => {
+      res.status(404)
+      res.json({error: 'EndPoint não encontrado'})
+    })
+
+
+------------------------------------------------------------------------------------------------------------------------------
+9ª passo -> instalar nodemon global no projeto--via terminal digitar:
+  - npm install -g nodemon
+
+10ª passo -> instalar ts-node global no projeto--via terminal digitar:
+  - npm install -g ts-node
+
+11ª passo -> No arquivo 'package.json' adicionar na 'scripts'("start-dev": "nodemon -e ts,json src/server/server.ts")
+
+------------------------------------------------------------------------------------------------------------------------------
+servidor rodando Ok
+
+
+1ª Agora para o projeto ter cara de projeto, temos que criar as pastas:
+  - Criar pasta chamada 'models' dentro da pasta 'src'
+  - Criar pasta chamada 'controller' dentro da pasta 'src'
+  - Criar pasta chamada 'instances' dentro da pasta 'src'
+  - Criar pasta chamada 'routers' dentro da pasta 'src'
+Observe que já temos 4 pastas principais(models/controller/instances/routers) que formam todo projeto
+
+2ª PODEMOS TESTAR SERVIDOR USANDO UMA ROTA--CONTROLLERS:
+Dentro da pasta 'controller' criar um arquivo chamada 'api_controller.ts'
+  - importar dentro do arquivo 'api_controller.ts' --> importar {Request, Response} from 'express'
+  - criar funções ping / random / nome pra dentro do controller
+  - temos que importar agora funções do controller para o arquivo das rotas --> import * as APIController from "../controllers/apiController"
+  - temos que importar a rota "ping pong" no arquivo do servidor
+
+
+------------------------------------------------------------------------------------------------------------------------------
+3ª CONFIGURAR CONEXÃO "Servidor com BANCO DE DADOS":
+Dentro da pasta 'instances' criar um arquivo chamada 'pg.ts'
+  - no arquivo 'pg.ts' importar e configurar comunicação com Banco de dados 'Postgres'
+    - import { Sequelize } from "sequelize" --> importar Sequelize para comunicação com Postgres
+    - import dotenv from 'dotenv' -----  inicializalo --> dotenv.config()
+    - dentro do '.env' fazer as devidas configurações do Banco de Dados:
+      - PG_DATABASE=frases
+      - PG_USER=postgres
+      - PG_PASSWORD=1234 
+      - PG_PORT=5432  
+  - no arquivo 'pg.ts' configurar 'sequelize':
+    - export const sequelize = new Sequelize(
+        process.env.PG_DATABASE as string,
+        process.env.PG_USER as string,
+        process.env.PG_PASSWORD as string,
+      {
+        // configurar as opções
+        dialect: 'postgres', // dizer qual é banco de dados
+        port: parseInt(process.env.PG_PORT as string) // transforma para inteiro
+      }
+) 
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+4ª CONFIGURAR MODELS:
+Dentro da pasta 'Models' criar arquivo chamado 'frase.ts'
+  - dentro do arquivo 'frase.ts' --> import { Model, DataType } from "sequelize"
+  -importar tambem 'sequelize' do arquivo 'instances' --> import { sequelize } from "../instances/pg"
+  - Criar 'types'em modo de interface:
+      export interface FraseInstance extends Model {
+        id: number,
+        autor: string,
+        texto: string
+      }
+
+  - Criando MODEL:
+    export const Frase = sequelize.define<FraseInstance>('Frase', { // 2 parametros(1ª nome do model / 2ª esprcificações do model)
+      id: {
+        primaryKey: true,
+        autoIncrement: true,
+        type: DataTypes.INTEGER
+      },
+
+      autor: {
+        type: DataTypes.STRING
+      },
+
+      texto: {
+        type: DataTypes.STRING
+      }
+},
+    {
+     // 3ª parametro com outro objeto com detalhes especificos
+      tableName: 'frases',  // nome da tabela no banco de dados
+      timestamps: false
+    }
+)
+
+  - temos que importar nosso 'model(frase.ts)' no arquivo 'controller'
+
+-------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,25 @@
+
+CONSULTAS{ 
+	data
+	hora
+	descricao_problema
+	fkanimal
+	fkveterinario
+ }
+
+LABORATORIO{
+	nome
+	endereço
+	telefone
+	fkveterinario
+}
+
+EXAMES {
+	tipo
+	data
+	resultado
+	fkanimal
+	fkveterinario
+	fklaboratorio
+}
+
